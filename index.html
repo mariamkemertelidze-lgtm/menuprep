@@ -1,0 +1,705 @@
+<!doctype html><html lang="ka"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>Menu Builder for Glovo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Noto+Sans:wght@400;500;600&family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one narrow column in three numbered steps (your details, products, send); large type and tap targets for partners who rarely use web forms */
+:root{
+  --bg:#f3f4f1; --surface:#ffffff; --ink:#1d2421; --muted:#5f6b66; --line:#d9ddd8;
+  --accent:#0f6b55; --accent-ink:#ffffff; --accent-soft:#e1efe9;
+  --warn:#9a5b00; --warn-soft:#fbefd9; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --display:"Bricolage Grotesque","Noto Sans Georgian","Noto Sans",system-ui,sans-serif;
+  --body:"Noto Sans","Noto Sans Georgian",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141917; --surface:#1d2421; --ink:#e8ece9; --muted:#9aa7a1; --line:#2f3935;
+  --accent:#4cc3a0; --accent-ink:#0b1512; --accent-soft:#1d3a31;
+  --warn:#f0b35a; --warn-soft:#3a2c14; --bad:#f2918a; --bad-soft:#3d1f1d; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#141917; --surface:#1d2421; --ink:#e8ece9; --muted:#9aa7a1; --line:#2f3935;
+  --accent:#4cc3a0; --accent-ink:#0b1512; --accent-soft:#1d3a31;
+  --warn:#f0b35a; --warn-soft:#3a2c14; --bad:#f2918a; --bad-soft:#3d1f1d; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:760px;margin:0 auto;padding-block:24px 48px;display:flex;flex-direction:column;gap:20px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-size:clamp(28px,6vw,36px);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 0;max-width:60ch}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;flex:none}
+.lang button{border:0;background:transparent;color:var(--muted);font:600 13px var(--body);padding:6px 12px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
+h2{font-family:var(--display);font-size:21px;margin:0;display:flex;align-items:center;gap:10px}
+.step{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:inline-flex;align-items:center;justify-content:center;font:700 16px var(--body)}
+.stephead{display:flex;flex-direction:column;gap:4px;margin-bottom:16px}
+.stephead .sub{margin:0}
+.hint{font-size:13px;color:var(--muted)}
+.grid3{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3 .shopname{grid-column:1/-1}
+label.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.lab{font-size:14px;font-weight:600;color:var(--ink)}
+.lab b{color:var(--bad);font-weight:600}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-height:48px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:64px}
+input:focus,select:focus,textarea:focus,button:focus-visible,.photo:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.invalid{border-color:var(--bad)!important;background:var(--bad-soft)}
+.items{display:flex;flex-direction:column;gap:12px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;grid-template-columns:150px 1fr;gap:16px}
+.num{font:600 14px var(--body);color:var(--muted);letter-spacing:.05em;font-variant-numeric:tabular-nums}
+.photos{display:flex;flex-direction:column;gap:6px}
+.photo{position:relative;aspect-ratio:1;width:100%;max-width:100%;border:1.5px dashed var(--line);border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;color:var(--accent);font-size:14px;font-weight:600;padding:8px;overflow:hidden}
+.photo.has{border-style:solid;padding:0;background:#fff}
+.photo img{width:100%;height:100%;object-fit:contain}
+.photo.drag{border-color:var(--accent);background:var(--accent-soft)}
+.plus{display:block;font-size:34px;line-height:1;color:var(--accent);margin-bottom:4px}
+.chip{position:absolute;left:4px;bottom:4px;max-width:calc(100% - 8px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:600 10px var(--body);padding:2px 6px;border-radius:999px;background:var(--surface);color:var(--muted);border:1px solid var(--line)}
+.chip.ok{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.chip.wait{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.chip.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.thumbs{display:flex;gap:4px;flex-wrap:wrap}
+.thumbs .t{position:relative;width:38px;height:38px;border-radius:7px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.thumbs .t img{width:100%;height:100%;object-fit:contain}
+.thumbs .t button{position:absolute;inset:0;opacity:0;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:14px;cursor:pointer}
+.thumbs .t button:hover,.thumbs .t button:focus-visible{opacity:1}
+.linkbtn{border:0;background:none;color:var(--accent);font:600 14px var(--body);padding:6px 0;cursor:pointer;text-align:left}
+.fields{display:grid;grid-template-columns:1fr 140px;gap:14px;min-width:0}
+.fields .wide{grid-column:1/-1}
+.pricebox{position:relative}
+.pricebox input{padding-right:34px;font-variant-numeric:tabular-nums}
+.pricebox span{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.count{font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.count.over{color:var(--bad);font-weight:600}
+.rowfoot{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.msg{font-size:14px;font-weight:500;color:var(--bad)}
+.ghost{border:1px solid var(--line);background:transparent;color:var(--muted);font:500 14px var(--body);padding:10px 16px;border-radius:10px;cursor:pointer}
+.danger{border:0;background:var(--bad);color:#fff;font:600 14px var(--body);padding:10px 16px;border-radius:10px;cursor:pointer}
+.delask{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;font-weight:500}
+.ghost:hover{color:var(--bad);border-color:var(--bad)}
+.add{border:2px dashed var(--accent);background:transparent;color:var(--accent);font:600 17px var(--body);padding:18px;border-radius:14px;cursor:pointer;width:100%}
+.add:hover{background:var(--accent-soft)}
+.summary{font-size:16px;color:var(--muted);font-variant-numeric:tabular-nums}
+.summary strong{color:var(--ink)}
+.summary .bad{color:var(--bad);font-weight:600}
+.primary{border:0;background:var(--accent);color:var(--accent-ink);font:600 16px var(--body);padding:13px 22px;border-radius:12px;cursor:pointer}
+.big{font-size:19px;padding:18px 28px;width:100%}
+.primary:disabled{opacity:.5;cursor:default}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ghost2{border:1px solid var(--accent);background:var(--surface);color:var(--accent);font:600 15px var(--body);padding:12px 18px;border-radius:12px;cursor:pointer}
+.ghost2:disabled{opacity:.5;cursor:default}
+.done{border-color:var(--accent);background:var(--accent-soft)}
+.reset{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.sendbox{display:flex;flex-direction:column;gap:14px}
+.notice{border-radius:12px;padding:12px 14px;font-size:14px;background:var(--warn-soft);color:var(--ink);border:1px solid transparent}
+.notice strong{color:var(--warn)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:14px 18px;border-radius:12px;font-size:16px;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:6;width:min(520px,calc(100% - 32px));text-align:center}
+.settings input{font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.crop{position:fixed;inset:0;z-index:20;background:rgba(10,14,12,.72);display:flex;align-items:center;justify-content:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.cropcard{background:var(--surface);border-radius:16px;padding:16px;width:min(440px,100%);max-height:100%;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.cropcard h3{font-family:var(--display);font-size:18px;margin:0}
+.cropcard p{margin:0;color:var(--muted);font-size:15px}
+#cropCanvas{width:100%;aspect-ratio:1;max-width:100%;border-radius:10px;background:#fff;touch-action:none;cursor:grab;display:block;outline:1px solid var(--line)}
+#cropCanvas:active{cursor:grabbing}
+.cropstage{position:relative}
+.cropcard p.lowres{color:var(--warn);background:var(--warn-soft);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:500}
+.busy{position:absolute;inset:0;border-radius:10px;background:rgba(255,255,255,.82);color:#1d2421;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:14px;font-weight:500}
+.bgrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--ink);font:500 14px var(--body);padding:10px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg button:disabled{opacity:.5;cursor:default}
+.swatches{display:flex;gap:6px}
+.sw{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:2px}
+.zoomrow{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:18px}
+.zoomrow input{flex:1;padding:0;accent-color:var(--accent);background:none;border:0}
+.cropbtns{display:flex;justify-content:flex-end;gap:8px}
+@media (max-width:620px){
+  .grid3{grid-template-columns:1fr}
+  .item{grid-template-columns:1fr;gap:12px;padding:14px}
+  .photos{display:grid;grid-template-columns:120px 1fr;gap:6px 12px;align-items:start}
+  .photos .num{grid-column:1/-1}
+  .photos .photo{grid-row:span 2}
+  .fields{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1 data-t="title"></h1>
+      <p class="sub" data-t="intro"></p>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="lang-ka" data-lang="ka">ქარ</button>
+      <button type="button" id="lang-en" data-lang="en">EN</button>
+    </div>
+  </header>
+
+  <div class="notice" id="hostNotice" hidden></div>
+
+  <section class="panel settings" id="settings" hidden>
+    <h2>Photo hosting key</h2>
+    <p class="sub" style="margin:0 0 10px">Free key from api.imgbb.com. It is saved in this browser only. Put it in the IMGBB_KEY line of the file before you host the page for partners.</p>
+    <input id="keyInput" placeholder="imgbb API key" autocomplete="off">
+  </section>
+
+  <section class="panel">
+    <div class="stephead"><h2><span class="step">1</span><span data-t="shop"></span></h2></div>
+    <div class="grid3">
+      <label class="f shopname"><span class="lab"><span data-t="shopName"></span> <b>*</b></span><input id="shopName" autocomplete="organization"></label>
+      <label class="f"><span class="lab"><span data-t="email"></span> <b>*</b></span><input id="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com"><span class="hint" data-t="emailHint"></span></label>
+      <label class="f"><span class="lab"><span data-t="phone"></span> <b>*</b></span><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="5XX XX XX XX"></label>
+    </div>
+  </section>
+
+  <section>
+    <div class="stephead"><h2><span class="step">2</span><span data-t="products"></span></h2><p class="sub" data-t="productsHint"></p></div>
+    <div class="items" id="items"></div>
+  </section>
+  <button type="button" class="add" id="addBtn"></button>
+
+  <section class="panel sendbox" id="sendPanel">
+    <div class="stephead" style="margin:0"><h2><span class="step">3</span><span data-t="sendTitle"></span></h2><p class="sub" data-t="sendHint"></p></div>
+    <div class="summary" id="summary"></div>
+    <button type="button" class="primary big" id="exportBtn"></button>
+  </section>
+  <section class="panel done" id="donePanel" hidden>
+    <div class="stephead"><h2 data-t="sentTitle"></h2><p class="sub" data-t="sentText"></p></div>
+    <div class="actions"><button type="button" class="ghost2" id="downloadBtn"></button><button type="button" class="primary" id="newMenuBtn2" data-t="newMenu"></button></div>
+  </section>
+  <div class="reset" id="resetRow">
+    <button type="button" class="linkbtn" id="resetBtn" data-t="newMenu"></button>
+    <span id="resetConfirm" hidden><span data-t="resetAsk"></span> <button type="button" class="ghost" id="resetYes" data-t="resetYes"></button> <button type="button" class="ghost" id="resetNo" data-t="cancel"></button></span>
+  </div>
+</div>
+
+<!-- Netlify Forms reads this hidden form when the site is deployed; the page posts the finished menu to it. -->
+<form name="menu-submission" method="POST" enctype="multipart/form-data" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input name="venue"><input name="email"><input name="phone"><input name="products"><textarea name="product-list"></textarea><input name="bot-field"><input type="file" name="excel">
+</form>
+<div class="toast" id="toast" hidden></div>
+<input type="file" id="fileInput" accept="image/*" multiple hidden>
+<div class="crop" id="crop" hidden role="dialog" aria-modal="true" aria-labelledby="cropTitle">
+  <div class="cropcard">
+    <h3 id="cropTitle" data-t="cropTitle"></h3>
+    <p data-t="cropHint"></p>
+    <div class="bgrow" id="bgRow">
+      <span class="lab" data-t="background"></span>
+      <div class="seg" role="group"><button type="button" id="bgKeep" data-t="bgKeep"></button><button type="button" id="bgRemove" data-t="bgRemove"></button></div>
+      <div class="swatches" id="swatches" hidden><button type="button" class="sw" data-c="#ffffff" style="background:#ffffff" aria-label="White"></button><button type="button" class="sw" data-c="#f1f1ef" style="background:#f1f1ef" aria-label="Light grey"></button></div>
+    </div>
+    <div class="cropstage"><canvas id="cropCanvas" width="540" height="540"></canvas><div class="busy" id="busy" hidden></div></div>
+    <p class="lowres" id="lowRes" data-t="lowRes" hidden></p>
+    <div class="zoomrow"><span aria-hidden="true">−</span><input type="range" id="zoom" min="0" max="1000" value="0" aria-label="Zoom"><span aria-hidden="true">+</span></div>
+    <div class="cropbtns"><button type="button" class="ghost" id="cropCancel" data-t="cancel"></button><button type="button" class="primary" id="cropOk" data-t="usePhoto"></button></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+// Free key from https://api.imgbb.com (Sod's account). Photos uploaded there get public direct links for Glovo.
+const IMGBB_KEY = "7b34a3831bc967822bf16a82380378c2";
+// Backup photo host, used when imgbb refuses an upload (e.g. "Rate limit reached"). Free Cloudinary account:
+// cloud name from the dashboard, plus an "Unsigned" upload preset (Settings > Upload > Upload presets).
+const CLOUDINARY_CLOUD = "kuw2jgxv";
+const CLOUDINARY_PRESET = "ick0i2eh";
+
+const TEMPLATE_B64 = "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";
+const CURRENCY = {GE:"₾",AM:"֏",KZ:"₸",KG:"с",UA:"₴",MD:"L",RO:"lei",BG:"€",HR:"€",IT:"€",ES:"€",PT:"€",ME:"€",AD:"€",PL:"zł",RS:"din",BA:"KM",MA:"DH",TN:"DT",KE:"KSh",UG:"USh",NG:"₦",GH:"₵",CI:"CFA"};
+const DESC_MAX = 250;
+const COUNTRY = "GE";   // all partners are in Georgia; the Excel's country cell and the price sign follow this
+
+const T = {
+  en:{title:"Create your menu",intro:"It takes 3 simple steps. Everything you type is saved on this device, so you can close the page and come back later.",
+    shop:"Your details",shopName:"Shop name",email:"Email",emailHint:"We will write to you here if something is missing.",phone:"Phone number",products:"Your products",
+    productsHint:"For each product add a photo, a name and a price. To add the next product, press “+ Add another product”.",
+    addPhoto:"Add photo",addMore:"+ Add another photo",name:"Product name",namePh:"e.g. Khachapuri Imeruli",
+    price:"Price",pricePh:"e.g. 12.50",desc:"Description (optional)",descPh:"e.g. With cheese, 1 piece",
+    remove:"Delete product",delAsk:"Delete this product?",delYes:"Yes, delete",delNo:"No",add:"+ Add another product",
+    sendTitle:"Send your menu",sendHint:"Check your products, then press the green button. The menu comes straight to us.",
+    download:"Download Excel",send:"Send menu",sending:"Sending, please wait…",copy:"Download a copy",sentTitle:"Your menu has been sent",sentText:"Thank you! We received your menu and will add it to Glovo. If anything is missing, we will contact you.",sendFailed:"The menu was not sent. Check your internet connection and press “Send menu” again.",newMenu:"Start a new menu",resetAsk:"Delete everything on this page?",resetYes:"Yes, delete",
+    uploading:"Uploading…",ready:"Photo ready",failed:"Not uploaded, tap to retry",local:"Saved here",
+    needName:"Write the product name",needPrice:"Write the price",needPhoto:"Add a photo",needShop:"Write your shop name",needEmail:"Write a correct email address",needPhone:"Write your phone number",
+    tooLong:"Description is longer than 250 characters",waitUploads:"Please wait until all photos finish uploading",
+    summary:(n,ok)=>`<strong>${n}</strong> product${n===1?"":"s"} added` + (ok<n?` · <span class="bad">${n-ok} need${n-ok===1?"s":""} fixing</span>`:""),saved:"The Excel file is ready",declined:"Download cancelled",
+    fixFirst:n=>`Please fix the ${n>1?n+" products":"product"} marked in red`,removePhoto:"Remove photo",cropTitle:"Fit the photo",lowRes:"This photo is small, so it will look blurry. Please use a bigger, sharper photo or zoom out.",cropHint:"Move the photo with your finger or mouse. Use the slider to make it bigger or smaller. Customers will see what is inside the square.",cancel:"Cancel",usePhoto:"Use this photo",background:"Background",bgKeep:"Keep",bgRemove:"Remove background",removing:"Removing the background… The first time this can take up to a minute.",bgFailed:"The background could not be removed. You can still use the photo as it is.",
+    demo:"<strong>Preview mode.</strong> Photos stay on this page and their links are left empty in the Excel. Photo links are created when the page runs on your own website with a photo hosting key."},
+  ka:{title:"შექმენით თქვენი მენიუ",intro:"სულ 3 მარტივი ნაბიჯია. ყველაფერი, რასაც ჩაწერთ, ინახება ამ მოწყობილობაზე, ასე რომ შეგიძლიათ დახუროთ გვერდი და მოგვიანებით დაბრუნდეთ.",
+    shop:"თქვენი მონაცემები",shopName:"მაღაზიის სახელი",email:"ელ-ფოსტა",emailHint:"აქ მოგწერთ, თუ რამე დაგვაკლდება.",phone:"ტელეფონის ნომერი",products:"თქვენი პროდუქტები",
+    productsHint:"თითოეულ პროდუქტს დაამატეთ ფოტო, სახელი და ფასი. შემდეგი პროდუქტისთვის დააჭირეთ „+ კიდევ ერთი პროდუქტის დამატებას“.",
+    addPhoto:"ფოტოს დამატება",addMore:"+ კიდევ ერთი ფოტო",name:"პროდუქტის სახელი",namePh:"მაგ. ხაჭაპური იმერული",
+    price:"ფასი",pricePh:"მაგ. 12.50",desc:"აღწერა (არასავალდებულო)",descPh:"მაგ. ყველით, 1 ცალი",
+    remove:"პროდუქტის წაშლა",delAsk:"წაიშალოს ეს პროდუქტი?",delYes:"დიახ, წაშლა",delNo:"არა",add:"+ კიდევ ერთი პროდუქტის დამატება",
+    sendTitle:"მენიუს გაგზავნა",sendHint:"გადაამოწმეთ პროდუქტები და დააჭირეთ მწვანე ღილაკს. მენიუ პირდაპირ ჩვენთან მოვა.",
+    download:"Excel-ის ჩამოტვირთვა",send:"მენიუს გაგზავნა",sending:"იგზავნება, გთხოვთ, დაელოდოთ…",copy:"ასლის ჩამოტვირთვა",sentTitle:"თქვენი მენიუ გაგზავნილია",sentText:"გმადლობთ! მენიუ მივიღეთ და დავამატებთ Glovo-ზე. თუ რამე დაგვაკლდება, დაგიკავშირდებით.",sendFailed:"მენიუ ვერ გაიგზავნა. შეამოწმეთ ინტერნეტი და კიდევ ერთხელ დააჭირეთ „მენიუს გაგზავნას“.",newMenu:"ახალი მენიუს დაწყება",resetAsk:"წაიშალოს ყველაფერი ამ გვერდზე?",resetYes:"დიახ, წაშლა",
+    uploading:"იტვირთება…",ready:"ფოტო მზადაა",failed:"ვერ აიტვირთა, სცადეთ თავიდან",local:"შენახულია აქ",
+    needName:"ჩაწერეთ პროდუქტის სახელი",needPrice:"ჩაწერეთ ფასი",needPhoto:"დაამატეთ ფოტო",needShop:"ჩაწერეთ მაღაზიის სახელი",needEmail:"ჩაწერეთ სწორი ელ-ფოსტა",needPhone:"ჩაწერეთ ტელეფონის ნომერი",
+    tooLong:"აღწერა 250 სიმბოლოზე გრძელია",waitUploads:"გთხოვთ, დაელოდოთ ფოტოების ატვირთვას",
+    summary:(n,ok)=>`დამატებულია <strong>${n}</strong> პროდუქტი` + (ok<n?` · <span class="bad">გასასწორებელია ${n-ok}</span>`:""),saved:"Excel ფაილი მზადაა",declined:"ჩამოტვირთვა გაუქმდა",
+    fixFirst:n=>`გთხოვთ, გაასწოროთ წითლად მონიშნული პროდუქტი (${n})`,removePhoto:"ფოტოს წაშლა",cropTitle:"მოარგეთ ფოტო",lowRes:"ეს ფოტო პატარაა და ბუნდოვანი გამოჩნდება. გამოიყენეთ უფრო დიდი და მკაფიო ფოტო, ან დააპატარავეთ.",cropHint:"ფოტო გადაადგილეთ თითით ან მაუსით. სლაიდერით გაადიდეთ ან დააპატარავეთ. მომხმარებელი დაინახავს მხოლოდ კვადრატში მოქცეულ ნაწილს.",cancel:"გაუქმება",usePhoto:"ამ ფოტოს გამოყენება",background:"ფონი",bgKeep:"დატოვება",bgRemove:"ფონის მოშორება",removing:"ფონი შორდება… პირველად შეიძლება ერთ წუთამდე გაგრძელდეს.",bgFailed:"ფონის მოშორება ვერ მოხერხდა. ფოტოს გამოყენება მაინც შეგიძლიათ ასე.",
+    demo:"<strong>საცდელი რეჟიმი.</strong> ფოტოები რჩება ამ გვერდზე და Excel-ში ბმულები ცარიელია. ბმულები შეიქმნება, როცა გვერდი თქვენს საიტზე იმუშავებს."}
+};
+
+const store = {
+  get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+};
+const DRAFT = "glovo-menu-draft-v1";
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2,10);
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let lang = store.get("glovo-menu-lang") || "ka";
+let state = store.get(DRAFT) || {shop:{name:"",email:"",phone:""},items:[]};
+state.shop = Object.assign({name:"",email:"",phone:""}, state.shop);
+if(!state.items.length) state.items.push(newItem());
+state.items.forEach(it=>it.photos.forEach(p=>{ if(p.status==="uploading") p.status = p.url ? "ok" : "failed"; }));
+const inArtifact = !!(window.claude && window.claude.use);
+// Sending needs the Netlify site (Netlify Forms); the claude.ai preview and a file opened from disk only download.
+const canSend = !inArtifact && location.protocol==="https:";
+let sending = false;
+const apiKey = () => IMGBB_KEY || store.get("imgbb-key") || "";
+let showErrors = false, pickTarget = null;
+
+function newItem(){ return {id:uid(),name:"",desc:"",price:"",photos:[]}; }
+function t(k,...a){ const v=T[lang][k]; return typeof v==="function"?v(...a):v; }
+function save(){ if(!store.set(DRAFT,state)){ /* full storage: keep linked photos, drop local image data */
+  const slim = JSON.parse(JSON.stringify(state)); slim.items.forEach(i=>i.photos.forEach(p=>{ if(p.url) p.data = p.thumb; }));
+  store.set(DRAFT,slim); } }
+
+function problems(it){
+  const p = [];
+  if(!it.name.trim()) p.push("needName");
+  if(!(parsePrice(it.price) > 0)) p.push("needPrice");
+  if(!it.photos.length) p.push("needPhoto");
+  if(it.desc.length > DESC_MAX) p.push("tooLong");
+  if(apiKey() && !inArtifact && it.photos.some(x=>!x.url && x.status!=="uploading")) p.push("failed");
+  return p;
+}
+function parsePrice(v){ const n = parseFloat(String(v).replace(",",".").replace(/[^\d.]/g,"")); return isFinite(n) ? Math.round(n*100)/100 : NaN; }
+const validEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+const validPhone = v => v.replace(/\D/g,"").length >= 9;
+function isBlank(it){ return !it.name.trim() && !String(it.price).trim() && !it.desc.trim() && !it.photos.length; }
+
+/* ---------- rendering ---------- */
+function renderStatic(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.lang===lang));
+  $("#addBtn").textContent = t("add");
+  $("#exportBtn").textContent = sending ? t("sending") : canSend ? t("send") : t("download");
+  $("#downloadBtn").textContent = t("copy");
+  $("#shopName").value = state.shop.name; $("#email").value = state.shop.email; $("#phone").value = state.shop.phone;
+  const n = $("#hostNotice"); n.hidden = !!apiKey() && !inArtifact; n.innerHTML = t("demo");
+}
+function chip(p){
+  if(p.status==="uploading") return `<span class="chip wait">${t("uploading")}</span>`;
+  if(p.url) return `<span class="chip ok">${t("ready")}</span>`;
+  if(p.status==="failed") return `<span class="chip bad">${t("failed")}</span>`;
+  return `<span class="chip">${t("local")}</span>`;
+}
+function renderItems(){
+  const cur = CURRENCY[COUNTRY] || "";
+  $("#items").innerHTML = state.items.map((it,i)=>{
+    const pr = showErrors && !isBlank(it) ? problems(it) : [];
+    const main = it.photos[0];
+    return `<article class="item" data-id="${it.id}">
+      <div class="photos">
+        <span class="num">#${i+1}</span>
+        <div class="photo ${main?"has":""} ${pr.includes("needPhoto")?"invalid":""}" tabindex="0" role="button" data-act="photo" aria-label="${t("addPhoto")}">
+          ${main?`<img src="${main.thumb}" alt="">${chip(main)}`:`<span><span class="plus">+</span>${t("addPhoto")}</span>`}
+        </div>
+        ${it.photos.length>1?`<div class="thumbs">${it.photos.slice(1).map((p,k)=>`<div class="t"><img src="${p.thumb}" alt=""><button type="button" data-act="rmphoto" data-k="${k+1}" aria-label="${t("removePhoto")}">×</button></div>`).join("")}</div>`:""}
+        ${main?`<button type="button" class="linkbtn" data-act="more">${t("addMore")}</button>`:""}
+      </div>
+      <div class="fields">
+        <label class="f"><span class="lab"><span>${t("name")}</span> <b>*</b></span><input id="name-${it.id}" data-k="name" value="${esc(it.name)}" placeholder="${esc(t("namePh"))}" class="${pr.includes("needName")?"invalid":""}"></label>
+        <label class="f"><span class="lab"><span>${t("price")}</span> <b>*</b></span><span class="pricebox"><input id="price-${it.id}" data-k="price" inputmode="decimal" value="${esc(it.price)}" placeholder="${esc(t("pricePh"))}" class="${pr.includes("needPrice")?"invalid":""}"><span>${cur}</span></span></label>
+        <label class="f wide"><span class="lab">${t("desc")}</span><textarea id="desc-${it.id}" data-k="desc" rows="2" placeholder="${esc(t("descPh"))}" class="${pr.includes("tooLong")?"invalid":""}">${esc(it.desc)}</textarea><span class="count ${it.desc.length>DESC_MAX?"over":""}">${it.desc.length} / ${DESC_MAX}</span></label>
+      </div>
+      <div class="rowfoot"><span class="msg">${pr.map(k=>t(k)).join(" · ")}</span>${state.items.length<2 ? "" : it.askDelete
+          ? `<span class="delask">${t("delAsk")} <button type="button" class="danger" data-act="remove">${t("delYes")}</button><button type="button" class="ghost" data-act="keep">${t("delNo")}</button></span>`
+          : `<button type="button" class="ghost" data-act="askremove">${t("remove")}</button>`}</div>
+    </article>`;
+  }).join("");
+  renderSummary();
+}
+function renderSummary(){
+  const real = state.items.filter(i=>!isBlank(i));
+  const ok = real.filter(i=>!problems(i).length).length;
+  $("#summary").innerHTML = t("summary", real.length, ok);
+  $("#exportBtn").disabled = !real.length || sending;
+}
+function renderAll(){ renderStatic(); renderItems(); }
+
+/* ---------- photos ---------- */
+function loadImage(file){ return new Promise((res,rej)=>{ const u=URL.createObjectURL(file); const im=new Image(); im.onload=()=>{res(im);}; im.onerror=rej; im.src=u; }); }
+// Glovo wants square product photos; we send 540x540. The partner frames each photo in a square window:
+// it opens filled edge to edge (center crop). Zooming out shows the whole photo, with the empty edges filled by a
+// blurred copy of the photo (never plain white bars). "Remove background" cuts the product out on a clean color.
+const OUT = 540, F = 540;
+const BG_LIB = "bg-removal.js";   // bundled @imgly/background-removal 1.4.5, hosted next to this page
+const BG_DATA = "https://staticimgly.com/@imgly/background-removal-data/1.4.5/dist/";   // free model files
+const crop = {src:null, im:null, cut:null, mode:"keep", color:"#ffffff", s:1, min:1, cover:1, max:1, x:0, y:0, done:null, blur:null};
+const dims = im => [im.naturalWidth||im.width, im.naturalHeight||im.height];
+function cropClamp(){
+  const [iw,ih] = dims(crop.im), w = iw*crop.s, h = ih*crop.s;
+  crop.x = w <= F ? (F-w)/2 : Math.min(0, Math.max(F-w, crop.x));
+  crop.y = h <= F ? (F-h)/2 : Math.min(0, Math.max(F-h, crop.y));
+}
+function makeBlur(im){ // tiny copy scaled back up reads as a soft blur in every browser
+  const [iw,ih] = dims(im), c = document.createElement("canvas"); c.width = c.height = 18;
+  const s = Math.max(18/iw, 18/ih), g = c.getContext("2d"); g.drawImage(im, (18-iw*s)/2, (18-ih*s)/2, iw*s, ih*s); return c;
+}
+// Idea from Sod's photo resizer: if the photo's edges are one plain color (a studio shot), extend that color into
+// the margins so the result looks seamless; otherwise use the blurred copy.
+function edgeColor(im){
+  const [iw,ih] = dims(im), n = 64, c = document.createElement("canvas"); c.width = c.height = n;
+  const g = c.getContext("2d"); g.drawImage(im,0,0,n,n); const d = g.getImageData(0,0,n,n).data, px = [];
+  for(let i=0;i<n;i++) for(const [x,y] of [[i,0],[i,n-1],[0,i],[n-1,i]]){ const k=(y*n+x)*4; px.push([d[k],d[k+1],d[k+2]]); }
+  const med = [0,1,2].map(ch=>px.map(p=>p[ch]).sort((a,b)=>a-b)[px.length>>1]);
+  const share = px.filter(p=>Math.max(...p.map((v,ch)=>Math.abs(v-med[ch])))<=18).length/px.length;
+  return share >= 0.85 ? `rgb(${med.join(",")})` : null;
+}
+// Shrinking a big phone photo straight to 540px in one step looks soft or jagged in most browsers, so halve it
+// step by step first and do only the last small reduction in drawImage.
+function halvedFor(im, scale){
+  let src = im, [w,h] = dims(im);
+  while(scale < 0.5){ const c = document.createElement("canvas"); c.width = Math.round(w/2); c.height = Math.round(h/2);
+    const g = c.getContext("2d"); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high"; g.drawImage(src,0,0,c.width,c.height);
+    src = c; w = c.width; h = c.height; scale *= 2; }
+  return src;
+}
+function cropDraw(g, size, sharp){
+  const k = size/F, [iw,ih] = dims(crop.im);
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+  if(crop.mode==="cut"){ g.fillStyle = crop.color; g.fillRect(0,0,size,size); }
+  else if(crop.edge){ g.fillStyle = crop.edge; g.fillRect(0,0,size,size); }
+  else { g.drawImage(crop.blur, 0, 0, size, size); }
+  g.drawImage(sharp ? halvedFor(crop.im, crop.s*k) : crop.im, crop.x*k, crop.y*k, iw*crop.s*k, ih*crop.s*k);
+}
+function cropRender(){
+  cropDraw($("#cropCanvas").getContext("2d"), F);
+  // crop.s above 1 means the photo is being enlarged to fill 540px, which is what makes it look blurry on Glovo
+  $("#lowRes").hidden = crop.s <= 1.2;
+}
+function zoomTo(s, cx=F/2, cy=F/2){
+  s = Math.min(crop.max, Math.max(crop.min, s));
+  crop.x = cx - (cx-crop.x)*s/crop.s; crop.y = cy - (cy-crop.y)*s/crop.s; crop.s = s; cropClamp(); cropRender();
+}
+// slider 0..1000: first fifth goes from "whole photo" to "filled", the rest zooms in up to 4x
+const sliderToScale = v => v<=200 ? crop.min+(crop.cover-crop.min)*v/200 : crop.cover*Math.pow(4,(v-200)/800);
+const scaleToSlider = s => s<=crop.cover ? (crop.cover===crop.min?200:200*(s-crop.min)/(crop.cover-crop.min)) : 200+800*Math.log(s/crop.cover)/Math.log(4);
+function useImage(im, startScale){
+  const [w,h] = dims(im);
+  Object.assign(crop, {im, min:Math.min(F/w,F/h), cover:Math.max(F/w,F/h)});
+  crop.max = crop.cover*4; crop.s = startScale(crop); crop.x = (F-w*crop.s)/2; crop.y = (F-h*crop.s)/2; cropClamp();
+  $("#zoom").value = scaleToSlider(crop.s); cropRender();
+}
+function setMode(mode){
+  crop.mode = mode;
+  $("#bgKeep").setAttribute("aria-pressed", mode==="keep"); $("#bgRemove").setAttribute("aria-pressed", mode==="cut");
+  $("#swatches").hidden = mode!=="cut";
+  document.querySelectorAll(".sw").forEach(b=>b.setAttribute("aria-pressed", b.dataset.c===crop.color));
+  // a cut-out product sits whole in the square with a little air around it
+  if(mode==="cut") useImage(crop.cut, c=>c.min*0.88), crop.min = Math.min(crop.min, crop.s);
+  else useImage(crop.src, c=>c.cover);
+}
+// Clean the cut-out: drop faint pixels and stray specks (keep only blobs at least 10% the size of the main one),
+// then trim the transparent edges so every product is centered the same way.
+function cleanCutout(img){
+  const [w,h] = dims(img), c = document.createElement("canvas"); c.width=w; c.height=h;
+  const g = c.getContext("2d"); g.drawImage(img,0,0); const id = g.getImageData(0,0,w,h), d = id.data;
+  const cell = Math.max(1, Math.ceil(Math.max(w,h)/240)), gw = Math.ceil(w/cell), gh = Math.ceil(h/cell);
+  const solid = new Uint8Array(gw*gh);
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const a=(y*w+x)*4+3; if(d[a]<40) d[a]=0; else if(d[a]>128) solid[((y/cell)|0)*gw+((x/cell)|0)]=1; }
+  const lab = new Int32Array(gw*gh), sizes=[0];
+  for(let i=0;i<solid.length;i++){ if(!solid[i]||lab[i]) continue;
+    const id2 = sizes.length; let n=0, st=[i]; lab[i]=id2;
+    while(st.length){ const j=st.pop(); n++; const x=j%gw, y=(j/gw)|0;
+      for(const k of [x>0?j-1:-1, x<gw-1?j+1:-1, y>0?j-gw:-1, y<gh-1?j+gw:-1]) if(k>=0 && solid[k] && !lab[k]){ lab[k]=id2; st.push(k); } }
+    sizes.push(n); }
+  const big = Math.max(0,...sizes), keep = sizes.map(n=>n>=big*0.1);
+  // a pixel survives if its grid cell (or a neighbouring one, for soft edges) belongs to a kept blob
+  const near = new Uint8Array(gw*gh);
+  for(let i=0;i<lab.length;i++) if(lab[i]&&keep[lab[i]]){ const x=i%gw, y=(i/gw)|0;
+    for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const xx=x+dx, yy=y+dy; if(xx>=0&&yy>=0&&xx<gw&&yy<gh) near[yy*gw+xx]=1; } }
+  let x0=w, y0=h, x1=-1, y1=-1;
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const a=(y*w+x)*4+3; if(!d[a]) continue;
+    if(!near[((y/cell)|0)*gw+((x/cell)|0)]){ d[a]=0; continue; }
+    if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  g.putImageData(id,0,0);
+  if(x1<0) return c;
+  const o = document.createElement("canvas"); o.width=x1-x0+1; o.height=y1-y0+1; o.getContext("2d").drawImage(c,-x0,-y0); return o;
+}
+let bgLib = null;
+async function removeBg(){
+  if(crop.cut){ setMode("cut"); return; }
+  const src = crop.src, busy = $("#busy"); busy.textContent = t("removing"); busy.hidden = false; $("#cropOk").disabled = true; $("#bgRemove").disabled = true;
+  try{
+    bgLib = bgLib || await import(new URL(BG_LIB, location.href).href);
+    const blob = await new Promise(r=>{ const c=document.createElement("canvas"); const [w,h]=dims(crop.src); const k=Math.min(1, 1600/Math.max(w,h));
+      c.width=Math.round(w*k); c.height=Math.round(h*k); c.getContext("2d").drawImage(crop.src,0,0,c.width,c.height); c.toBlob(r,"image/png"); });
+    const out = await bgLib.removeBackground(blob, {model:"small", publicPath:BG_DATA, output:{format:"image/png"}});
+    if(!crop.done || crop.src!==src) return;
+    crop.cut = cleanCutout(await loadImage(out));
+    setMode("cut");
+  }catch(e){ console.warn("background removal failed", e); toast(t("bgFailed")); }
+  finally{ if(crop.src!==src) return; busy.hidden = true; $("#cropOk").disabled = false; $("#bgRemove").disabled = false; }
+}
+function cropDialog(im){
+  return new Promise(res=>{
+    Object.assign(crop, {src:im, cut:null, done:res, blur:makeBlur(im), edge:edgeColor(im)});
+    $("#busy").hidden = true; $("#cropOk").disabled = false; $("#bgRemove").disabled = false;
+    $("#bgRow").hidden = inArtifact;   // the model files cannot load inside claude.ai previews
+    setMode("keep");
+    $("#crop").hidden = false; $("#cropOk").focus();
+  });
+}
+function cropClose(ok){
+  $("#crop").hidden = true; $("#busy").hidden = true; const done = crop.done; crop.done = null; if(!done) return;
+  if(!ok) return done(null);
+  const out = (size,q)=>{ const c=document.createElement("canvas"); c.width=c.height=size; cropDraw(c.getContext("2d"),size,true); return c.toDataURL("image/jpeg",q); };
+  done({data:out(OUT, .95), thumb:out(240,.8)});
+}
+(()=>{
+  const cv = $("#cropCanvas"); let drag=null;
+  const pt = e=>{ const r=cv.getBoundingClientRect(); return {x:(e.clientX-r.left)*F/r.width, y:(e.clientY-r.top)*F/r.height}; };
+  cv.addEventListener("pointerdown", e=>{ cv.setPointerCapture(e.pointerId); const p=pt(e); drag={x:p.x-crop.x, y:p.y-crop.y}; });
+  cv.addEventListener("pointermove", e=>{ if(!drag) return; const p=pt(e); crop.x=p.x-drag.x; crop.y=p.y-drag.y; cropClamp(); cropRender(); });
+  cv.addEventListener("pointerup", ()=>drag=null); cv.addEventListener("pointercancel", ()=>drag=null);
+  cv.addEventListener("wheel", e=>{ e.preventDefault(); const p=pt(e); zoomTo(crop.s*Math.exp(-e.deltaY/500), p.x, p.y); $("#zoom").value=scaleToSlider(crop.s); }, {passive:false});
+  $("#zoom").addEventListener("input", e=>zoomTo(sliderToScale(+e.target.value)));
+  $("#bgKeep").onclick = ()=>setMode("keep"); $("#bgRemove").onclick = removeBg;
+  document.querySelectorAll(".sw").forEach(b=>b.onclick=()=>{ crop.color=b.dataset.c; setMode("cut"); });
+  $("#cropOk").onclick = ()=>cropClose(true); $("#cropCancel").onclick = ()=>cropClose(false);
+  document.addEventListener("keydown", e=>{ if(!$("#crop").hidden){ if(e.key==="Escape") cropClose(false); if(e.key==="Enter" && e.target.tagName!=="BUTTON" && !$("#cropOk").disabled) cropClose(true); } });
+})();
+async function addPhotos(item, files){
+  for(const f of files){
+    if(!f.type.startsWith("image/")) continue;
+    let im; try{ im = await loadImage(f); }catch(e){ toast(f.name+": ?"); continue; }
+    const r = await cropDialog(im); if(!r) continue;
+    const p = {id:uid(), data:r.data, thumb:r.thumb, url:"", status:"local"};
+    item.photos.push(p);
+    renderItems(); save();
+    upload(item, p);
+  }
+}
+async function viaImgbb(key, data, name){
+  const fd = new FormData();
+  fd.append("image", data.split(",")[1]);
+  fd.append("name", name);
+  const r = await fetch("https://api.imgbb.com/1/upload?key="+encodeURIComponent(key), {method:"POST", body:fd});
+  const j = await r.json();
+  if(!j.success) throw new Error(j.error && j.error.message || r.status);
+  return j.data.url;
+}
+async function viaCloudinary(data, name){
+  const fd = new FormData();
+  fd.append("file", data);
+  fd.append("upload_preset", CLOUDINARY_PRESET);
+  const r = await fetch("https://api.cloudinary.com/v1_1/"+encodeURIComponent(CLOUDINARY_CLOUD)+"/image/upload", {method:"POST", body:fd});
+  const j = await r.json();
+  if(!j.secure_url) throw new Error(j.error && j.error.message || r.status);
+  return j.secure_url;
+}
+async function upload(item, p){
+  const key = apiKey(), cld = CLOUDINARY_CLOUD && CLOUDINARY_PRESET;
+  if((!key && !cld) || inArtifact){ p.status="local"; return; }
+  p.status = "uploading"; renderItems();
+  const name = (state.shop.name+"-"+item.name).slice(0,60) || "product";
+  try{
+    try{ if(!key) throw new Error("no imgbb key"); p.url = await viaImgbb(key, p.data, name); }
+    catch(e){ if(!cld) throw e; console.warn("imgbb failed, using Cloudinary", e); p.url = await viaCloudinary(p.data, name); }
+    p.status = "ok"; p.data = p.thumb;
+  }catch(e){ p.status = "failed"; console.warn("upload failed", e); }
+  renderItems(); save();
+}
+
+/* ---------- Excel (fills the Glovo onboarding template) ---------- */
+const GE_LAT = {"ა":"a","ბ":"b","გ":"g","დ":"d","ე":"e","ვ":"v","ზ":"z","თ":"t","ი":"i","კ":"k","ლ":"l","მ":"m","ნ":"n","ო":"o","პ":"p","ჟ":"zh","რ":"r","ს":"s","ტ":"t","უ":"u","ფ":"p","ქ":"k","ღ":"gh","ყ":"q","შ":"sh","ჩ":"ch","ც":"ts","ძ":"dz","წ":"ts","ჭ":"ch","ხ":"kh","ჯ":"j","ჰ":"h"};
+function slug(s){ return [...s.toLowerCase()].map(c=>GE_LAT[c]??c).join("").normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "shop"; }
+function xml(s){ return esc(String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"").trim()); }
+const str = (ref,v,s) => v===""||v==null ? `<c r="${ref}"${s?` s="${s}"`:""}/>` : `<c r="${ref}"${s?` s="${s}"`:""} t="inlineStr"><is><t xml:space="preserve">${xml(v)}</t></is></c>`;
+const num = (ref,v,s) => `<c r="${ref}" s="${s}"><v>${v}</v></c>`;
+// Sod's layout drops the template's Unit/Step and Discounted Price columns, so products fill A-I and the rest stay styled blanks up to AL.
+const FILL = ["J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","AA","AB","AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL"];
+
+async function buildXlsx(items){
+  const zip = await JSZip.loadAsync(TEMPLATE_B64, {base64:true});
+  const path = "xl/worksheets/sheet1.xml";
+  let s = await zip.file(path).async("string");
+  const base = slug(state.shop.name);
+  s = s.replace('<c r="B2" s="3"/>', str("B2", base, 3))
+       .replace('<c r="C2" s="5"/>', str("C2", COUNTRY, 5));
+  const rows = items.map((it,i)=>{
+    const r = 6+i;
+    return `<row r="${r}" spans="1:38" ht="26.25" customHeight="1">`
+      + str("A"+r,"Standard",20) + str("B"+r, base.replace(/-/g,"")+(i+1), 21) + `<c r="C${r}" s="22"/>`
+      + str("D"+r,it.name) + str("E"+r,it.photos.map(p=>p.url).filter(Boolean).join(",")) + str("F"+r,it.desc)
+      + num("G"+r,parsePrice(it.price),26) + num("H"+r,1,27) + `<c r="I${r}" s="23"/>`
+      + FILL.map(c=>`<c r="${c}${r}" s="3"/>`).join("") + `</row>`;
+  }).join("");
+  s = s.replace("</sheetData>", rows + "</sheetData>").replace('<dimension ref="A1:AL5"/>', `<dimension ref="A1:AL${5+items.length}"/>`);
+  zip.file(path, s);
+  return zip.generateAsync({type:"uint8array", compression:"DEFLATE", mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+// Checks everything and returns the finished workbook, or null after pointing the partner at what to fix.
+async function finishedWorkbook(){
+  showErrors = true;
+  if(!state.shop.name.trim()){ $("#shopName").classList.add("invalid"); $("#shopName").focus(); toast(t("needShop")); return null; }
+  if(!validEmail(state.shop.email)){ $("#email").classList.add("invalid"); $("#email").focus(); toast(t("needEmail")); return null; }
+  if(!validPhone(state.shop.phone)){ $("#phone").classList.add("invalid"); $("#phone").focus(); toast(t("needPhone")); return null; }
+  const items = state.items.filter(i=>!isBlank(i));
+  if(items.some(i=>i.photos.some(p=>p.status==="uploading"))){ toast(t("waitUploads")); return null; }
+  const bad = items.filter(i=>problems(i).length);
+  renderItems();
+  if(bad.length){ toast(t("fixFirst", bad.length)); document.querySelector(`[data-id="${bad[0].id}"]`)?.scrollIntoView({behavior:"smooth",block:"center"}); return null; }
+  return {items, bytes: await buildXlsx(items), filename:`${slug(state.shop.name)}_glovo_menu.xlsx`};
+}
+async function downloadExcel(){
+  const wb = await finishedWorkbook(); if(!wb) return;
+  const {bytes, filename} = wb;
+  if(inArtifact){
+    const dl = await window.claude.use("downloads");
+    if(!dl){ toast("Download is not available here"); return; }
+    try{ await dl.save({filename, data:bytes}); toast(t("saved")); }
+    catch(e){ toast(e && e.code==="declined" ? t("declined") : (e && e.message) || "Download failed"); }
+  } else {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([bytes],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+    a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 5000); toast(t("saved"));
+  }
+}
+// Finished menus are emailed to Sod through FormSubmit (free; the first submission sends Sod an activation email).
+// A copy also goes to Netlify Forms when form detection is on for the site. Either one arriving counts as sent.
+const SEND_TO = "gecategorymanagers@glovoapp.com";
+// Google Apps Script web app (google-apps-script.gs on Sod's Google account). When set, it is used instead of
+// FormSubmit: it emails the Excel as an attachment, keeps a copy in Drive and reports real success or failure.
+const MAIL_URL = "";
+function toBase64(bytes){ let s = ""; for(let i=0;i<bytes.length;i+=0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i,i+0x8000)); return btoa(s); }
+async function emailViaAppsScript(payload){
+  // text/plain keeps this a simple request, so the browser sends it without a CORS preflight Apps Script cannot answer
+  const r = await fetch(MAIL_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(payload)});
+  const j = await r.json().catch(()=>({}));
+  if(!j.ok) throw new Error(j.error || ("HTTP "+r.status));
+}
+function emailViaFormSubmit(fields, file){
+  // FormSubmit takes attachments only from a regular form post, so post a hidden form into a hidden frame.
+  return new Promise((resolve, reject)=>{
+    const name = "fs" + Date.now(), frame = document.createElement("iframe"), form = document.createElement("form");
+    frame.name = name; frame.hidden = true; document.body.appendChild(frame);
+    Object.assign(form, {method:"POST", enctype:"multipart/form-data", action:"https://formsubmit.co/"+encodeURIComponent(SEND_TO), target:name, hidden:true});
+    for(const [k,v] of Object.entries(fields)){ const i = document.createElement("input"); i.type = "hidden"; i.name = k; i.value = v; form.appendChild(i); }
+    const fi = document.createElement("input"); fi.type = "file"; fi.name = "attachment";
+    const dt = new DataTransfer(); dt.items.add(file); fi.files = dt.files; form.appendChild(fi);
+    document.body.appendChild(form);
+    const done = ok=>{ clearTimeout(timer); setTimeout(()=>{ frame.remove(); form.remove(); }, 1000); ok ? resolve() : reject(new Error("email timeout")); };
+    const timer = setTimeout(()=>done(false), 45000);
+    frame.addEventListener("load", ()=>done(true), {once:true});
+    form.submit();
+  });
+}
+async function saveToNetlify(fields, file){
+  const fd = new FormData(); fd.append("form-name", "menu-submission");
+  for(const [k,v] of Object.entries(fields)) fd.append(k, v);
+  fd.append("excel", file);
+  const r = await fetch("/", {method:"POST", body:fd});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+}
+async function sendMenu(){
+  if(sending) return;
+  if(navigator.onLine===false){ toast(t("sendFailed")); return; }
+  const wb = await finishedWorkbook(); if(!wb) return;
+  sending = true; renderStatic(); renderSummary();
+  try{
+    const file = new File([wb.bytes], wb.filename, {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const cur = CURRENCY[COUNTRY] || "";
+    const list = wb.items.map((it,i)=>`${i+1}. ${it.name.trim()} - ${parsePrice(it.price)} ${cur}`).join("\n");
+    const venue = {venue:state.shop.name.trim(), email:state.shop.email.trim(), phone:state.shop.phone.trim(), products:String(wb.items.length)};
+    if(MAIL_URL){
+      await emailViaAppsScript({shop:venue.venue, email:venue.email, phone:venue.phone, count:venue.products,
+        products:wb.items.map(it=>`${it.name.trim()} - ${parsePrice(it.price)} ${cur}`), filename:wb.filename, file:toBase64(wb.bytes)});
+      saveToNetlify({...venue, "product-list":list}, file).catch(()=>{});
+      return markSent();
+    }
+    const results = await Promise.allSettled([
+      // FormSubmit sets Reply-To from the "email" field, so Sod can answer the partner straight from the email.
+      emailViaFormSubmit({"Shop name":venue.venue, email:venue.email, "Phone number":venue.phone, "Number of products":venue.products, "Products":list,
+        _subject:`New Glovo menu: ${venue.venue} (${venue.products} products)`, _captcha:"false", _template:"table"}, file),
+      saveToNetlify({...venue, "product-list":list}, file)
+    ]);
+    // The email frame cannot tell success from a dropped connection, so a network failure on the Netlify call
+    // (a TypeError, not an HTTP error) means the partner is offline and nothing went out.
+    if(results[1].status==="rejected" && results[1].reason instanceof TypeError) throw new Error("offline");
+    if(!results.some(r=>r.status==="fulfilled")) throw results[0].reason;
+    markSent();
+  }catch(e){ console.warn("send failed", e); toast(t("sendFailed") + (e && e.message ? ` (${e.message})` : "")); }
+  finally{ sending = false; renderStatic(); renderSummary(); }
+}
+function markSent(){
+    state.sentAt = new Date().toISOString(); save();
+    $("#donePanel").hidden = false; $("#sendPanel").hidden = true; $("#resetRow").hidden = true; $("#donePanel").scrollIntoView({behavior:"smooth", block:"center"});
+}
+function startNewMenu(){
+  state = {shop:{name:"", email:"", phone:""}, items:[newItem()]};
+  showErrors = false; save(); $("#donePanel").hidden = true; $("#sendPanel").hidden = false; $("#resetRow").hidden = false; $("#resetConfirm").hidden = true; $("#resetBtn").hidden = false;
+  renderAll(); window.scrollTo({top:0, behavior:"smooth"});
+}
+
+/* ---------- events ---------- */
+let toastTimer;
+function toast(m){ const el=$("#toast"); el.textContent=m; el.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.hidden=true,6000); }
+const itemOf = el => state.items.find(i=>i.id===el.closest(".item")?.dataset.id);
+
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{ lang=b.dataset.lang; store.set("glovo-menu-lang",lang); renderAll(); });
+$("#shopName").oninput = e=>{ state.shop.name=e.target.value; e.target.classList.remove("invalid"); save(); };
+for(const k of ["email","phone"]) $("#"+k).oninput = e=>{ state.shop[k]=e.target.value; e.target.classList.remove("invalid"); save(); };
+$("#addBtn").onclick = ()=>{ const it=newItem(); state.items.push(it); save(); renderItems(); document.getElementById("name-"+it.id)?.focus(); };
+$("#exportBtn").onclick = ()=> canSend ? sendMenu() : downloadExcel();
+$("#downloadBtn").onclick = downloadExcel;
+$("#newMenuBtn2").onclick = startNewMenu;
+$("#resetBtn").onclick = ()=>{ $("#resetBtn").hidden = true; $("#resetConfirm").hidden = false; };
+$("#resetNo").onclick = ()=>{ $("#resetBtn").hidden = false; $("#resetConfirm").hidden = true; };
+$("#resetYes").onclick = startNewMenu;
+
+const items = $("#items");
+items.addEventListener("input", e=>{
+  const k = e.target.dataset.k, it = itemOf(e.target); if(!k||!it) return;
+  it[k] = e.target.value; e.target.classList.remove("invalid");
+  if(k==="desc"){ const c=e.target.parentElement.querySelector(".count"); c.textContent=`${it.desc.length} / ${DESC_MAX}`; c.classList.toggle("over", it.desc.length>DESC_MAX); }
+  save(); renderSummary();
+});
+items.addEventListener("click", e=>{
+  const b = e.target.closest("[data-act]"); if(!b) return; const it = itemOf(b);
+  const act = b.dataset.act;
+  if(act==="photo"){
+    const p = it.photos[0];
+    if(it.photos.some(x=>x.status==="failed")){ it.photos.filter(x=>x.status==="failed").forEach(x=>upload(it,x)); return; }
+    pickTarget = it; $("#fileInput").click();
+  } else if(act==="more"){ pickTarget = it; $("#fileInput").click(); }
+  else if(act==="rmphoto"){ it.photos.splice(+b.dataset.k,1); save(); renderItems(); }
+  else if(act==="askremove"){ it.askDelete = true; renderItems(); }
+  else if(act==="keep"){ delete it.askDelete; renderItems(); }
+  else if(act==="remove"){ state.items = state.items.filter(x=>x!==it); save(); renderItems(); }
+});
+items.addEventListener("keydown", e=>{ if((e.key==="Enter"||e.key===" ") && e.target.classList.contains("photo")){ e.preventDefault(); e.target.click(); } });
+items.addEventListener("dragover", e=>{ const p=e.target.closest(".photo"); if(p){ e.preventDefault(); p.classList.add("drag"); } });
+items.addEventListener("dragleave", e=>{ e.target.closest(".photo")?.classList.remove("drag"); });
+items.addEventListener("drop", e=>{ const p=e.target.closest(".photo"); if(!p) return; e.preventDefault(); addPhotos(itemOf(p), [...e.dataTransfer.files]); });
+$("#fileInput").onchange = e=>{ if(pickTarget) addPhotos(pickTarget,[...e.target.files]); e.target.value=""; };
+
+// Hidden setup panel for Sod: open the page with #setup to paste the photo hosting key for testing.
+function checkSetup(){ const on = location.hash==="#setup"; $("#settings").hidden=!on; if(on) $("#keyInput").value = store.get("imgbb-key")||""; }
+$("#keyInput").oninput = e=>{ store.set("imgbb-key", e.target.value.trim()); renderStatic(); };
+window.addEventListener("hashchange", checkSetup);
+checkSetup(); renderAll();
+</script>
+</body></html>
